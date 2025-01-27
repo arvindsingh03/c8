@@ -2,9 +2,9 @@ import pandas as pd
 from ortools.sat.python import cp_model
 import streamlit as st
 import plotly.express as px
-
 import base64
 
+# Set background image
 def set_background_image(image_path):
     with open(image_path, "rb") as image_file:
         base64_image = base64.b64encode(image_file.read()).decode()
@@ -23,17 +23,6 @@ def set_background_image(image_path):
     )
 
 set_background_image("C:/Users/PC/Downloads/113.png")
-
-# ECWCS Gen III Layers with CLO Values (scaled by 100)
-LAYERS_DB = [
-    {'layer_id': 1, 'clu': 30, 'order': 1, 'type': 'base', 'name': 'Lightweight Base Layer', 'weight': 0.2, 'cost': 50},
-    {'layer_id': 2, 'clu': 70, 'order': 2, 'type': 'mid', 'name': 'Midweight Fleece', 'weight': 0.5, 'cost': 80},
-    {'layer_id': 3, 'clu': 90, 'order': 3, 'type': 'insulation', 'name': 'High-Loft Fleece Jacket', 'weight': 0.7, 'cost': 120},
-    {'layer_id': 4, 'clu': 40, 'order': 4, 'type': 'wind', 'name': 'Wind Jacket', 'weight': 0.4, 'cost': 100},
-    {'layer_id': 5, 'clu': 60, 'order': 5, 'type': 'softshell', 'name': 'Soft-Shell Jacket', 'weight': 0.6, 'cost': 150},
-    {'layer_id': 6, 'clu': 80, 'order': 6, 'type': 'hardshell', 'name': 'Waterproof Hard-Shell', 'weight': 0.8, 'cost': 200},
-    {'layer_id': 7, 'clu': 250, 'order': 7, 'type': 'parka', 'name': 'Extreme Cold Parka', 'weight': 1.5, 'cost': 300},
-]
 
 # Improved IREQ Algorithm
 class ArcticIREQCalculator:
@@ -196,7 +185,7 @@ data = load_data(r"C:\Users\PC\Downloads\crt.csv")
 # Sidebar for Person ID selection
 with st.sidebar:
     st.header("Personal Profile")
-    person_id = st.selectbox("Select Person ID", data['Person_ID'].unique())
+    person_id = st.selectbox("Select Person ID", data['Person_ID'].unique(), key="person_id_selectbox")
     
     # Fetch data for the selected person
     person_data = data[data['Person_ID'] == person_id].iloc[0]
@@ -209,12 +198,23 @@ with st.sidebar:
     st.write(f"VO2 Max: {person_data['VO2_Max_mL_kg_min']} mL/kg/min")
 
     st.header("Environmental Parameters")
-    air_temp = st.slider("Temperature (°C)", -60, 10, -40)
-    wind_speed = st.slider("Wind Speed (m/s)", 0, 40, 25)
-    humidity = st.slider("Humidity (%)", 0, 100, 50)
-    activity_level = st.selectbox("Activity Level", ['low', 'moderate', 'high'])
+    air_temp = st.slider("Temperature (°C)", -60, 10, -40, key="air_temp_slider")
+    wind_speed = st.slider("Wind Speed (m/s)", 0, 40, 25, key="wind_speed_slider")
+    humidity = st.slider("Humidity (%)", 0, 100, 50, key="humidity_slider")
+    activity_level = st.selectbox("Activity Level", ['low', 'moderate', 'high'], key="activity_level_selectbox")
 
-if st.button("Calculate Protection"):
+# ECWCS Gen III Layers with CLO Values (scaled by 100)
+LAYERS_DB = [
+    {'layer_id': 1, 'clu': 30, 'order': 1, 'type': 'base', 'name': 'Lightweight Base Layer', 'weight': 0.2, 'cost': 50},
+    {'layer_id': 2, 'clu': 70, 'order': 2, 'type': 'mid', 'name': 'Midweight Fleece', 'weight': 0.5, 'cost': 80},
+    {'layer_id': 3, 'clu': 90, 'order': 3, 'type': 'insulation', 'name': 'High-Loft Fleece Jacket', 'weight': 0.7, 'cost': 120},
+    {'layer_id': 4, 'clu': 40, 'order': 4, 'type': 'wind', 'name': 'Wind Jacket', 'weight': 0.4, 'cost': 100},
+    {'layer_id': 5, 'clu': 60, 'order': 5, 'type': 'softshell', 'name': 'Soft-Shell Jacket', 'weight': 0.6, 'cost': 150},
+    {'layer_id': 6, 'clu': 80, 'order': 6, 'type': 'hardshell', 'name': 'Waterproof Hard-Shell', 'weight': 0.8, 'cost': 200},
+    {'layer_id': 7, 'clu': 250, 'order': 7, 'type': 'parka', 'name': 'Extreme Cold Parka', 'weight': 1.5, 'cost': 300},
+]
+
+if st.button("Calculate Protection", key="calculate_button"):
     calculator = ArcticIREQCalculator()
     optimizer = ArcticLayerOptimizer(LAYERS_DB)
     
@@ -272,4 +272,4 @@ if st.button("Calculate Protection"):
         layer_names = [l['name'] for l in recommended]
         layer_clu = [l['clu']/100 for l in recommended]
         fig = px.bar(x=layer_names, y=layer_clu, labels={'x': 'Layer', 'y': 'CLU Value'}, title="Layer Contribution to Insulation")
-        st.plotly_chart(fig) 
+        st.plotly_chart(fig)
