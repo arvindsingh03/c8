@@ -22,7 +22,7 @@ def set_background_image(image_path):
         unsafe_allow_html=True
     )
 
-set_background_image("C:/Users/PC/Downloads/113.png")
+set_background_image("C:/Users/PC/Downloads/Telegram Desktop/113.png")
 
 # Improved IREQ Algorithm
 class ArcticIREQCalculator:
